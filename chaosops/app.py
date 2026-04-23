@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import os
 from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from env import ChaosOpsEnv
@@ -10,6 +12,7 @@ from env import ChaosOpsEnv
 
 app = FastAPI(title="ChaosOps", version="1.0.0")
 env = ChaosOpsEnv()
+UI_FILE = os.path.join(os.path.dirname(__file__), "ui.html")
 
 
 class ResetRequest(BaseModel):
@@ -27,8 +30,14 @@ def root() -> Dict[str, Any]:
         "ok": True,
         "service": "ChaosOps",
         "message": "Use POST /reset and POST /step",
+        "ui": "/ui",
         "docs": "/docs",
     }
+
+
+@app.get("/ui")
+def ui_page() -> FileResponse:
+    return FileResponse(UI_FILE, media_type="text/html")
 
 
 @app.get("/health")
