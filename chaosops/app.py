@@ -21,6 +21,21 @@ class StepRequest(BaseModel):
     payload: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
 
+@app.get("/")
+def root() -> Dict[str, Any]:
+    return {
+        "ok": True,
+        "service": "ChaosOps",
+        "message": "Use POST /reset and POST /step",
+        "docs": "/docs",
+    }
+
+
+@app.get("/health")
+def health() -> Dict[str, Any]:
+    return {"ok": True, "status": "healthy"}
+
+
 @app.post("/reset")
 def reset_endpoint(request: ResetRequest) -> Dict[str, Any]:
     try:
