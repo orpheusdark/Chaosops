@@ -31,6 +31,17 @@ python -m pip install -r requirements.txt
 python -m uvicorn app:app --host 127.0.0.1 --port 8000
 ```
 
+## Auto Benchmark + Progress Chart
+
+```powershell
+python .\scripts\auto_run_and_chart.py
+```
+
+Generated artifacts:
+
+- `charts/rl_progress.svg`
+- `charts/rl_progress.json`
+
 ## API Smoke Test
 
 ```powershell
