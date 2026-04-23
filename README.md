@@ -53,7 +53,7 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/reset -ContentType 'ap
 
 Open the dashboard at:
 
-- `/ui`
+- [`/ui`](https://orpheusdark-chaosops.hf.space/ui)
 
 It provides a guided mission console with reset, step actions, schema-aware fix flow, and live state timeline.
 
