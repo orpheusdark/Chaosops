@@ -22,14 +22,17 @@ if ($LASTEXITCODE -ne 0) {
     throw "Hugging Face login required. Run: hf auth login"
 }
 
-hf repo create "$SpaceName" --type space --space_sdk docker -y
+hf repo create "$SpaceName" --type space --space-sdk docker --exist-ok
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Repo may already exist. Continuing..."
+    throw "Failed to create or access Hugging Face Space repo."
 }
 
 $repoUrl = "https://huggingface.co/spaces/$HFUsername/$SpaceName"
 
-git remote remove hf 2>$null
+git remote get-url hf 1>$null 2>$null
+if ($LASTEXITCODE -eq 0) {
+    git remote remove hf
+}
 
 git remote add hf $repoUrl
 
