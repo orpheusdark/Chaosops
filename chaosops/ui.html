@@ -307,7 +307,7 @@
 
             <button id="btnFix" class="btn-ghost">fix_service</button>
             <button id="btnAuto" class="btn-main">Auto Solve</button>
-            <button id="btnDemo" class="btn-main">Demo Mode</button>
+            <button id="btnPresentation" class="btn-main">Presentation Mode</button>
           </div>
 
           <div class="status-row">
@@ -376,7 +376,7 @@
       btnSchema: document.getElementById('btnSchema'),
       btnFix: document.getElementById('btnFix'),
       btnAuto: document.getElementById('btnAuto'),
-      btnDemo: document.getElementById('btnDemo')
+      btnPresentation: document.getElementById('btnPresentation')
     };
 
     const appState = {
@@ -488,8 +488,8 @@
       return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    async function demoMode() {
-      ui.btnDemo.disabled = true;
+    async function presentationMode() {
+      ui.btnPresentation.disabled = true;
       ui.btnAuto.disabled = true;
       ui.btnReset.disabled = true;
       ui.btnQuery.disabled = true;
@@ -498,24 +498,24 @@
       ui.btnFix.disabled = true;
 
       try {
-        addEvent('demo', 'starting scripted mission', 'ok');
+        addEvent('presentation', 'starting narrated mission flow', 'ok');
         await doReset();
-        await wait(700);
+        await wait(1400);
         await doStep('query_system', {});
-        await wait(700);
+        await wait(1400);
         await doStep('request_access', { justification: 'Need token to fix oom crash' });
-        await wait(700);
+        await wait(1400);
         await doStep('get_schema', {});
-        await wait(700);
+        await wait(1400);
 
         const cfg = appState.schemaVersion === 1
           ? { service: 'auth_service', status: 'running', cpu_limit: '1' }
           : { service_name: 'auth_service', condition: 'running', max_compute: '1' };
 
         await doStep('fix_service', { config: cfg, token: appState.token || '' });
-        addEvent('demo', 'mission complete', 'ok');
+        addEvent('presentation', 'mission complete', 'ok');
       } finally {
-        ui.btnDemo.disabled = false;
+        ui.btnPresentation.disabled = false;
         ui.btnAuto.disabled = false;
         ui.btnReset.disabled = false;
         ui.btnQuery.disabled = false;
@@ -531,7 +531,7 @@
     ui.btnSchema.addEventListener('click', () => doStep('get_schema', {}));
     ui.btnFix.addEventListener('click', doFix);
     ui.btnAuto.addEventListener('click', autoSolve);
-    ui.btnDemo.addEventListener('click', demoMode);
+    ui.btnPresentation.addEventListener('click', presentationMode);
 
     doReset();
   </script>
