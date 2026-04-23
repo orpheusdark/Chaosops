@@ -4,6 +4,10 @@ emoji: "🛠️"
 colorFrom: blue
 colorTo: green
 sdk: docker
+sdk_version: "latest"
+python_version: "3.10"
+app_file: app.py
+pinned: false
 app_port: 8000
 ---
 
@@ -75,4 +79,3 @@ git push hf main
 ```
 
 If prompted, use your Hugging Face username and a write token as password.
-chaosops
