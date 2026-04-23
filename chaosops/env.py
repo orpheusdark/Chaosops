@@ -13,9 +13,9 @@ class ChaosOpsEnv:
         self._lock = Lock()
         self.task_name = "task3"
         self.task_settings = {
-            "task1": {"schema_drift": False},
-            "task2": {"schema_drift": True},
-            "task3": {"schema_drift": True},
+            "task1": {"schema_drift": False, "permission_required": False},
+            "task2": {"schema_drift": True, "permission_required": False},
+            "task3": {"schema_drift": True, "permission_required": True},
         }
         self.state: Dict[str, Any] = {}
         self.total_reward = 0.0
@@ -54,9 +54,13 @@ class ChaosOpsEnv:
         should_drift = self.task_settings.get(self.task_name, {}).get("schema_drift", True)
         if should_drift and self.state["step_count"] == 2 and self.state["api_schema_version"] == 1:
             self.state["api_schema_version"] = 2
+            self.state["drift_active"] = True
 
     def _ensure_token(self, token: str) -> bool:
         return token == self.state.get("access_token") and bool(token)
+
+    def _permission_required(self) -> bool:
+        return bool(self.task_settings.get(self.task_name, {}).get("permission_required", True))
 
     def reset(self, task_name: str = "task3") -> Dict[str, Any]:
         if task_name not in self.task_settings:
@@ -70,6 +74,9 @@ class ChaosOpsEnv:
                 "api_schema_version": 1,
                 "has_permission": False,
                 "step_count": 0,
+                "schema_fail_count": 0,
+                "drift_active": False,
+                "used_schema_after_drift": False,
             }
             self.total_reward = 0.0
             return {
@@ -80,6 +87,8 @@ class ChaosOpsEnv:
             }
 
     def get_schema(self) -> Dict[str, Any]:
+        if self.state.get("drift_active", False) and self.state["api_schema_version"] == 2:
+            self.state["used_schema_after_drift"] = True
         return {
             "ok": True,
             "schema": self._get_schema_definition(),
@@ -124,18 +133,19 @@ class ChaosOpsEnv:
                 "error_code": "INVALID_CONFIG",
                 "message": "config must be a dict",
             }
-        if not isinstance(token, str) or not token.strip():
-            return {
-                "ok": False,
-                "error_code": "INVALID_TOKEN",
-                "message": "token must be a non-empty string",
-            }
-        if not self.state.get("has_permission", False) or not self._ensure_token(token.strip()):
-            return {
-                "ok": False,
-                "error_code": "NO_PERMISSION",
-                "message": "permission required before fix",
-            }
+        if self._permission_required():
+            if not isinstance(token, str) or not token.strip():
+                return {
+                    "ok": False,
+                    "error_code": "INVALID_TOKEN",
+                    "message": "token must be a non-empty string",
+                }
+            if not self.state.get("has_permission", False) or not self._ensure_token(token.strip()):
+                return {
+                    "ok": False,
+                    "error_code": "NO_PERMISSION",
+                    "message": "permission required before fix",
+                }
 
         required_keys = set(self._get_schema_definition()["required_config_keys"])
         provided_keys = set(config.keys())
@@ -174,10 +184,13 @@ class ChaosOpsEnv:
             action = action.strip()
             if action == "query_system":
                 result = self.query_system()
+                reward_delta -= 0.02
             elif action == "get_schema":
                 result = self.get_schema()
                 if result.get("ok"):
                     reward_delta += 0.1
+                    if self.state.get("drift_active", False):
+                        reward_delta += 0.15
             elif action == "request_access":
                 result = self.request_access(payload.get("justification", ""))
                 if result.get("ok"):
@@ -185,6 +198,8 @@ class ChaosOpsEnv:
                 else:
                     reward_delta -= 0.1
             elif action == "fix_service":
+                if self.state.get("drift_active", False) and not self.state.get("used_schema_after_drift", False):
+                    reward_delta -= 0.3
                 result = self.fix_service(
                     config=payload.get("config", {}),
                     token=payload.get("token", ""),
@@ -192,7 +207,8 @@ class ChaosOpsEnv:
                 if result.get("ok"):
                     reward_delta += 0.6
                 elif result.get("error_code") == "WRONG_SCHEMA":
-                    reward_delta -= 0.2
+                    self.state["schema_fail_count"] += 1
+                    reward_delta -= 0.2 * self.state["schema_fail_count"]
                 elif result.get("error_code") == "NO_PERMISSION":
                     reward_delta -= 0.2
             else:
@@ -201,6 +217,7 @@ class ChaosOpsEnv:
                     "error_code": "UNKNOWN_ACTION",
                     "message": f"unknown action: {action}",
                 }
+                reward_delta -= 0.05
 
             self.total_reward += reward_delta
 

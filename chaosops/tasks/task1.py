@@ -8,8 +8,6 @@ def run_task() -> float:
     env.reset("task1")
 
     env.step("query_system", {})
-    access = env.step("request_access", {"justification": "Need access to resolve OOM crash"})
-    token = access.get("result", {}).get("token", "")
     fixed = env.step(
         "fix_service",
         {
@@ -18,7 +16,7 @@ def run_task() -> float:
                 "status": "running",
                 "cpu_limit": "1",
             },
-            "token": token,
+            "token": "",
         },
     )
 

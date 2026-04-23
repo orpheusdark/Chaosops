@@ -3,96 +3,96 @@
     {
       "episode": 1,
       "mode": "baseline",
-      "score": 0.6,
-      "reward": 0.6,
+      "score": 0.43,
+      "reward": 0.43,
       "steps": 6,
       "success": true
     },
     {
       "episode": 2,
       "mode": "baseline",
-      "score": 0.6,
-      "reward": 0.6,
+      "score": 0.43,
+      "reward": 0.43,
       "steps": 6,
       "success": true
     },
     {
       "episode": 3,
       "mode": "baseline",
-      "score": 0.6,
-      "reward": 0.6,
+      "score": 0.43,
+      "reward": 0.43,
       "steps": 6,
       "success": true
     },
     {
       "episode": 4,
       "mode": "baseline",
-      "score": 0.6,
-      "reward": 0.6,
+      "score": 0.43,
+      "reward": 0.43,
       "steps": 6,
       "success": true
     },
     {
       "episode": 5,
       "mode": "baseline",
-      "score": 0.6,
-      "reward": 0.6,
+      "score": 0.43,
+      "reward": 0.43,
       "steps": 6,
       "success": true
     },
     {
       "episode": 6,
       "mode": "baseline",
-      "score": 0.6,
-      "reward": 0.6,
+      "score": 0.43,
+      "reward": 0.43,
       "steps": 6,
       "success": true
     },
     {
       "episode": 7,
       "mode": "rl_agent",
-      "score": 0.9,
-      "reward": 0.9,
+      "score": 0.99,
+      "reward": 1.03,
       "steps": 4,
       "success": true
     },
     {
       "episode": 8,
       "mode": "rl_agent",
-      "score": 0.9,
-      "reward": 0.9,
+      "score": 0.99,
+      "reward": 1.03,
       "steps": 4,
       "success": true
     },
     {
       "episode": 9,
       "mode": "rl_agent",
-      "score": 0.9,
-      "reward": 0.9,
+      "score": 0.99,
+      "reward": 1.03,
       "steps": 4,
       "success": true
     },
     {
       "episode": 10,
       "mode": "rl_agent",
-      "score": 0.9,
-      "reward": 0.9,
+      "score": 0.99,
+      "reward": 1.03,
       "steps": 4,
       "success": true
     },
     {
       "episode": 11,
       "mode": "rl_agent",
-      "score": 0.9,
-      "reward": 0.9,
+      "score": 0.99,
+      "reward": 1.03,
       "steps": 4,
       "success": true
     },
     {
       "episode": 12,
       "mode": "rl_agent",
-      "score": 0.9,
-      "reward": 0.9,
+      "score": 0.99,
+      "reward": 1.03,
       "steps": 4,
       "success": true
     }
