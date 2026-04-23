@@ -49,6 +49,14 @@ $resetBody = @{ task = 'task3' } | ConvertTo-Json
 Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/reset -ContentType 'application/json' -Body $resetBody
 ```
 
+## Web UI
+
+Open the dashboard at:
+
+- `/ui`
+
+It provides a guided mission console with reset, step actions, schema-aware fix flow, and live state timeline.
+
 ## Architecture Visual
 
 ```mermaid
