@@ -9,6 +9,8 @@ COPY chaosops/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY chaosops /app/chaosops
+COPY chaosops/app.py /app/chaosops/app.py
+COPY chaosops/ui.html /app/chaosops/ui.html
 
 EXPOSE 8000
 
