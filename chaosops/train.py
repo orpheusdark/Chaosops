@@ -98,15 +98,13 @@ def generate_model_action(
 ) -> str:
     fastlm.for_inference(model)
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=1024).to(model.device)
-    input_len = int(inputs["input_ids"].shape[1])
-    # Use max_length directly to avoid repeated warnings when both max_new_tokens
-    # and generation_config.max_length are set by upstream libraries.
-    generation_max_length = min(1024, input_len + max_new_tokens)
 
     with torch.no_grad():
         out = model.generate(
             **inputs,
-            max_length=generation_max_length,
+            # Prefer max_new_tokens only to avoid conflicts when model configs
+            # already define max_length.
+            max_new_tokens=max_new_tokens,
             do_sample=True,
             temperature=max(0.2, temperature),
             top_p=0.95,
