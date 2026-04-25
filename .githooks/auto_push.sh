@@ -1,12 +1,43 @@
 #!/bin/bash
-# Auto-push to both GitHub (origin) and HuggingFace (hf) on commit
+# Auto-push current branch to GitHub (origin) and HuggingFace (hf) on commit.
+
+set -u
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+if [ -z "$branch" ] || [ "$branch" = "HEAD" ]; then
+	echo "Cannot auto-push in detached HEAD state."
+	exit 1
+fi
 
 echo "Auto-pushing to both remotes..."
 
-# Push to GitHub
-git push origin main 2>&1 | grep -v "already up to date" || true
+pushed_any=0
 
-# Push to HuggingFace Space
-git push hf main 2>&1 | grep -v "already up to date" || true
+if git remote | grep -qx "origin"; then
+	echo "Pushing $branch to origin..."
+	if git push origin "$branch"; then
+		pushed_any=1
+	else
+		echo "Warning: failed to push to origin"
+	fi
+else
+	echo "Skipping origin push (remote not configured)."
+fi
+
+if git remote | grep -qx "hf"; then
+	echo "Pushing $branch to hf..."
+	if git push hf "$branch"; then
+		pushed_any=1
+	else
+		echo "Warning: failed to push to hf"
+	fi
+else
+	echo "Skipping hf push (remote not configured)."
+fi
+
+if [ "$pushed_any" -eq 0 ]; then
+	echo "Auto-push failed: no remote push succeeded."
+	exit 1
+fi
 
 echo "Auto-push complete"
