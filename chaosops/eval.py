@@ -54,6 +54,20 @@ except Exception:
         return text[-1200:]
 
 
+def _make_env(max_steps: int, seed: int) -> ChaosOpsEnv:
+    try:
+        return ChaosOpsEnv(max_steps=max_steps, seed=seed)
+    except TypeError:
+        return ChaosOpsEnv(max_steps=max_steps)
+
+
+def _reset_task3(env: ChaosOpsEnv, variation_mode: bool) -> Dict[str, Any]:
+    try:
+        return env.reset("task3", variation_mode=variation_mode)
+    except TypeError:
+        return env.reset("task3")
+
+
 def run_policy_eval(
     model: Any,
     tokenizer: Any,
@@ -62,7 +76,7 @@ def run_policy_eval(
     variation_mode: bool,
     temperature: float,
 ) -> Dict[str, Any]:
-    env = ChaosOpsEnv(max_steps=10, seed=99)
+    env = _make_env(max_steps=10, seed=99)
     wrapper = ChaosOpsWrapper()
 
     successes = 0
@@ -73,7 +87,7 @@ def run_policy_eval(
     repeated = 0
 
     for _ in range(episodes):
-        out = env.reset("task3", variation_mode=variation_mode)
+        out = _reset_task3(env, variation_mode=variation_mode)
         obs = out["observation"]
         final = None
 
@@ -90,12 +104,12 @@ def run_policy_eval(
             continue
 
         st = final["state"]
-        ec = st["error_counts"]
+        ec = st.get("error_counts", {})
 
         successes += 1 if st["service_status"] == "running" else 0
         rewards.append(float(final["total_reward"]))
         steps.append(int(st["step_count"]))
-        wrong_schema += int(ec.get("WRONG_SCHEMA", 0))
+        wrong_schema += int(ec.get("WRONG_SCHEMA", st.get("schema_fail_count", 0)))
         no_permission += int(ec.get("NO_PERMISSION", 0))
         repeated += int(ec.get("REPEATED_USELESS_ACTIONS", 0))
 
@@ -113,7 +127,7 @@ def run_policy_eval(
 
 
 def run_random_baseline(episodes: int) -> Dict[str, Any]:
-    env = ChaosOpsEnv(max_steps=10, seed=55)
+    env = _make_env(max_steps=10, seed=55)
 
     actions = ["query_system", "get_schema", "request_access", "fix_service"]
     successes = 0
@@ -124,7 +138,7 @@ def run_random_baseline(episodes: int) -> Dict[str, Any]:
     repeated = 0
 
     for _ in range(episodes):
-        env.reset("task3", variation_mode=False)
+        _reset_task3(env, variation_mode=False)
         final = None
         token = ""
 
@@ -150,12 +164,12 @@ def run_random_baseline(episodes: int) -> Dict[str, Any]:
             continue
 
         st = final["state"]
-        ec = st["error_counts"]
+        ec = st.get("error_counts", {})
 
         successes += 1 if st["service_status"] == "running" else 0
         rewards.append(float(final["total_reward"]))
         steps.append(int(st["step_count"]))
-        wrong_schema += int(ec.get("WRONG_SCHEMA", 0))
+        wrong_schema += int(ec.get("WRONG_SCHEMA", st.get("schema_fail_count", 0)))
         no_permission += int(ec.get("NO_PERMISSION", 0))
         repeated += int(ec.get("REPEATED_USELESS_ACTIONS", 0))
 

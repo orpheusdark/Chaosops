@@ -22,6 +22,22 @@ class EpisodeTrace:
     transitions: List[Dict[str, Any]]
 
 
+def _make_env(max_steps: int, seed: int) -> ChaosOpsEnv:
+    try:
+        return ChaosOpsEnv(max_steps=max_steps, seed=seed)
+    except TypeError:
+        # Newer env versions removed seed from constructor.
+        return ChaosOpsEnv(max_steps=max_steps)
+
+
+def _reset_task3(env: ChaosOpsEnv, variation_mode: bool) -> Dict[str, Any]:
+    try:
+        return env.reset("task3", variation_mode=variation_mode)
+    except TypeError:
+        # Newer env versions removed variation_mode from reset.
+        return env.reset("task3")
+
+
 def load_unsloth_qwen(model_name: str = "Qwen/Qwen2.5-0.5B"):
     # Colab install command:
     # pip install -U unsloth trl transformers datasets accelerate bitsandbytes peft
@@ -83,7 +99,7 @@ def run_episode(
     temperature: float,
     variation_mode: bool,
 ) -> EpisodeTrace:
-    reset_out = env.reset("task3", variation_mode=variation_mode)
+    reset_out = _reset_task3(env, variation_mode=variation_mode)
     obs = reset_out["observation"]
 
     transitions: List[Dict[str, Any]] = []
@@ -180,7 +196,7 @@ def train_loop(
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    env = ChaosOpsEnv(max_steps=10, seed=13)
+    env = _make_env(max_steps=10, seed=13)
     wrapper = ChaosOpsWrapper()
 
     os.makedirs(output_dir, exist_ok=True)
