@@ -68,6 +68,30 @@ def _reset_task3(env: ChaosOpsEnv, variation_mode: bool) -> Dict[str, Any]:
         return env.reset("task3")
 
 
+def _observation_from_state(st: Dict[str, Any]) -> Dict[str, Any]:
+    if st.get("api_schema_version", 1) == 1:
+        return {
+            "service": "auth_service",
+            "status": st.get("service_status", "crashed"),
+            "cpu_limit": "500m",
+        }
+    return {
+        "service_name": "auth_service",
+        "condition": st.get("service_status", "crashed"),
+        "max_compute": "1",
+    }
+
+
+def _extract_observation(out: Dict[str, Any]) -> Dict[str, Any]:
+    obs = out.get("observation")
+    if isinstance(obs, dict):
+        return obs
+    st = out.get("state")
+    if isinstance(st, dict):
+        return _observation_from_state(st)
+    return {"service": "auth_service", "status": "crashed", "cpu_limit": "500m"}
+
+
 def run_policy_eval(
     model: Any,
     tokenizer: Any,
@@ -88,7 +112,7 @@ def run_policy_eval(
 
     for _ in range(episodes):
         out = _reset_task3(env, variation_mode=variation_mode)
-        obs = out["observation"]
+        obs = _extract_observation(out)
         final = None
 
         for _s in range(env.max_steps):
@@ -96,7 +120,7 @@ def run_policy_eval(
             raw = generate_model_action(model, tokenizer, fastlm, prompt, temperature=temperature)
             action_obj = wrapper.parse_model_output(raw)
             final = env.step(action_obj["action"], action_obj["payload"])
-            obs = final["observation"]
+            obs = _extract_observation(final)
             if final["done"]:
                 break
 
