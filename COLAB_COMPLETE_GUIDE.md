@@ -7,20 +7,20 @@
 │                    GOOGLE COLAB WORKFLOW                        │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  1️⃣ SETUP          2️⃣ INSTALL         3️⃣ TRAIN              │
-│  ─────────         ──────────────      ────────              │
-│  • Check GPU        • unsloth          • Load Qwen2.5         │
-│  • Clone repo       • transformers     • Initialize env      │
-│  • Verify files     • peft (LoRA)      • Run 10 episodes     │
-│                     • torch            • Save adapter        │
-│  ⏱️  1 min          ⏱️  5-10 min       ⏱️  10-15 min          │
+│  1️⃣ SETUP          2️⃣ INSTALL         3️⃣ TRAIN                │
+│  ─────────         ──────────────      ────────                 │
+│  • Check GPU        • unsloth          • Load Qwen2.5           │
+│  • Clone repo       • transformers     • Initialize env         │
+│  • Verify files     • peft (LoRA)      • Run 10 episodes        │
+│                     • torch            • Save adapter           │
+│  ⏱️  1 min          ⏱️  5-10 min       ⏱️  10-15 min           │
 │                                                                 │
-│  4️⃣ EVALUATE       5️⃣ VISUALIZE       6️⃣ SAVE                │
-│  ─────────────      ────────────       ──────                 │
-│  • Baseline         • Charts           • Google Drive         │
-│  • Trained          • Metrics          • GitHub Auto-push    │
-│  • Variation        • Dashboard        • Results JSON        │
-│  ⏱️  5-10 min       ⏱️  1 min           ⏱️  2 min              │
+│  4️⃣ EVALUATE       5️⃣ VISUALIZE       6️⃣ SAVE                  │
+│  ─────────────      ────────────       ──────                   │
+│  • Baseline         • Charts           • Google Drive           │
+│  • Trained          • Metrics          • GitHub Auto-push       │
+│  • Variation        • Dashboard        • Results JSON           │
+│  ⏱️  5-10 min       ⏱️  1 min           ⏱️  2 min             │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
               Total Time: ~35-50 minutes (first run)

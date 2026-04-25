@@ -163,14 +163,23 @@ def train_loop(
     variation_prob: float,
 ) -> Dict[str, Any]:
     # Lazy import so eval.py can import helper functions without pulling TRL extras.
+    use_trl = True
     try:
         from trl import SFTConfig, SFTTrainer
     except Exception as exc:  # pragma: no cover
-        raise RuntimeError(
-            "TRL import failed. Install/upgrade with: pip install -U trl mergekit"
-        ) from exc
+        use_trl = False
+        trl_error = str(exc)
+        print(
+            "[WARN] TRL import failed; falling back to transformers Trainer. "
+            "Install/upgrade with: pip install -U trl mergekit"
+        )
+        print(f"[WARN] TRL error: {trl_error}")
+        from transformers import DataCollatorForLanguageModeling, Trainer, TrainingArguments
 
     model, tokenizer, fastlm = load_unsloth_qwen(model_name=model_name)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
     env = ChaosOpsEnv(max_steps=10, seed=13)
     wrapper = ChaosOpsWrapper()
 
@@ -193,27 +202,52 @@ def train_loop(
             group.append(ep)
 
         ds = build_grpo_style_dataset(group)
+        if use_trl:
+            cfg = SFTConfig(
+                output_dir=output_dir,
+                per_device_train_batch_size=2,
+                gradient_accumulation_steps=2,
+                num_train_epochs=1,
+                learning_rate=2e-4,
+                logging_steps=1,
+                max_seq_length=1024,
+                save_strategy="no",
+                report_to=[],
+            )
 
-        cfg = SFTConfig(
-            output_dir=output_dir,
-            per_device_train_batch_size=2,
-            gradient_accumulation_steps=2,
-            num_train_epochs=1,
-            learning_rate=2e-4,
-            logging_steps=1,
-            max_seq_length=1024,
-            save_strategy="no",
-            report_to=[],
-        )
-
-        trainer = SFTTrainer(
-            model=model,
-            tokenizer=tokenizer,
-            train_dataset=ds,
-            dataset_text_field="text",
-            args=cfg,
-        )
-        trainer.train()
+            trainer = SFTTrainer(
+                model=model,
+                tokenizer=tokenizer,
+                train_dataset=ds,
+                dataset_text_field="text",
+                args=cfg,
+            )
+            trainer.train()
+        else:
+            tokenized = ds.map(
+                lambda batch: tokenizer(batch["text"], truncation=True, max_length=1024),
+                batched=True,
+                remove_columns=["text"],
+            )
+            args = TrainingArguments(
+                output_dir=output_dir,
+                per_device_train_batch_size=2,
+                gradient_accumulation_steps=2,
+                num_train_epochs=1,
+                learning_rate=2e-4,
+                logging_steps=1,
+                save_strategy="no",
+                report_to=[],
+                remove_unused_columns=False,
+            )
+            collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
+            trainer = Trainer(
+                model=model,
+                args=args,
+                train_dataset=tokenized,
+                data_collator=collator,
+            )
+            trainer.train()
 
         avg_reward = sum(ep.total_reward for ep in group) / len(group)
         success_rate = sum(1 for ep in group if ep.success) / len(group)
